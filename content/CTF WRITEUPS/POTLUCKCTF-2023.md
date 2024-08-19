@@ -7,8 +7,6 @@ tags:
   - ctf-writeups
 date: 02-06-2024
 ---
-
-#heap_exploitation #writeups 
 ___
 ### TAMAGOYAKI << POTLUCK CTF 2023
 
@@ -332,3 +330,5 @@ gimme_dinner()
 
 p.interactive()
 ```
+
+NEXT WRITEUP [[IDEKCTF-2024]]
