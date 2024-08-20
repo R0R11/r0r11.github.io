@@ -6,17 +6,17 @@
       <description>Last 10 notes on R0R1</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
-    <title>IDEKCTF 2024 - A SILENCE OF 3 PARTS</title>
-    <link>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</link>
-    <guid>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</guid>
-    <description>...</description>
-    <pubDate>Tue, 20 Aug 2024 15:50:55 GMT</pubDate>
-  </item><item>
     <title>BINARY-EXPLOITATION</title>
     <link>https://R0R11.github.io/BINARY-EXPLOITATION</link>
     <guid>https://R0R11.github.io/BINARY-EXPLOITATION</guid>
     <description>This is the documentation of my journey into binary exploitation and computer science as a whole, not having done anything related to computer science until my college first year, ...</description>
-    <pubDate>Tue, 20 Aug 2024 15:50:47 GMT</pubDate>
+    <pubDate>Tue, 20 Aug 2024 16:17:26 GMT</pubDate>
+  </item><item>
+    <title>IDEKCTF 2024 - A SILENCE OF 3 PARTS</title>
+    <link>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</link>
+    <guid>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</guid>
+    <description>...</description>
+    <pubDate>Tue, 20 Aug 2024 09:52:55 GMT</pubDate>
   </item><item>
     <title>STACK-BASED-EXPLOITATION</title>
     <link>https://R0R11.github.io/STACK-BASED-EXPLOITATION</link>
@@ -33,7 +33,7 @@
     <title>POTLUCKCTF-2023 TAMAGOYAKI</title>
     <link>https://R0R11.github.io/CTF-WRITEUPS/POTLUCKCTF-2023</link>
     <guid>https://R0R11.github.io/CTF-WRITEUPS/POTLUCKCTF-2023</guid>
-    <description>heap_exploitationwriteups TAMAGOYAKI &lt;&lt; POTLUCK CTF 2023 CODE REVIEW - The code has the following functions dinner() Checks if a byte sequence exist in an mmapped region ...</description>
+    <description>...</description>
     <pubDate>Tue, 06 Feb 2024 05:00:00 GMT</pubDate>
   </item><item>
     <title>KERNEL EXPLOITATION</title>

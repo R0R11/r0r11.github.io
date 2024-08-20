@@ -14,6 +14,7 @@ ___
 
 IDEKCTF 2024 was a fun ctf with many cool pwn challenges but I kind of got hung up on this one challenge throughout the ctf. I used the trick from the previous post to improve the odds with this challenge - I will re-explain it as I didnt go as much in depth with the other one.
 
+___
 #### PREMISE -
 There are classic heap challenge functions such as : 
 
@@ -30,10 +31,12 @@ PRIMITIVE -
 
 This is a leakless challenge where the only leak you get is by overwriting file structure.
 
-##### INTENDED : 
+___
+#### INTENDED : 
 
 You can check the challenge authors blog for that :D. I probably wouldnt have been able to come up with such an idea as explained here whenever it'll be up here -> [unvariant](https://unvariant.pages.dev/writeups/). Thus I had to come up with something unusual. I think you should go read the actual solution first before the current cause I feel one should always appreciate what the challenge was supposed to be before what it became.
 
+___
 #### UNINTENDED / MY APPROACH -
 
 In the description of the challenge the author mentioned that the aslr brute was not above `8 bits` to which initially my idea was to overwrite the lowest byte of a `tcache` chunk to get an 8 bit brute on an overlap which I could maybe use as a spray of size to reduce it to a 4 bit brute. But it seemed way too unreliable as for fsop also in the method that I knew of we needed another 4 bit brute for our chunk to land on the file structure and for us to get the leaks.
@@ -43,6 +46,9 @@ In the description of the challenge the author mentioned that the aslr brute was
 Since I have to improve my primitives I looked at the malloc source to see if I can find something useful. 
 
 I noticed how within largebins if you allocate to a largebin of the following format, The chunk with the skiplist is not removed as it is expensive. Thus it proceeds to the next chunk of same size which is removed.
+
+>[!info]-  Linux users can probably skip this note
+>umm... if the diagrams look slightly off to you it is because `SKILL ISSUE`, why you using windows or mac ?? `jk` its prolly because of the font your browser uses (0_0);
 
 ```
 ┍━━━━━━━━━┑       ┍━━━━━━━━━┑       ┍━━━━━━━━━┑       
@@ -94,7 +100,7 @@ To set the pointers I used a malloc consolidate of size 0x30 chunks to consolida
 
 The current setup resulted in me getting an overlapped largebin chunk. :D 
 
-[+] PART 1 COMPLETE : GET OVERLAPPING CHUNKS
+> [!tip] PART 1 COMPLETE : GET OVERLAPPING CHUNKS
 
 ##### BUT WHAT NOW ? 
 
@@ -245,7 +251,7 @@ This can be done completely leakless and with 100% accuracy if you can have 2 ch
 Thus i chose size 0x28 as it gives me 2 chunks such that I can edit the last byte to reach the tcache struct. 
 We need this because editing more than 1 byte would lead to having to deal with aslr and bruting.
 
-[+] PART 2 COMPLETE : TCACHE PERTHREAD STRUCT CORRUPTION
+>[!tip] PART 2 COMPLETE : TCACHE PERTHREAD STRUCT CORRUPTION
 
 ##### DO WE GET A LEAK, ANYTIME SOON ?
 
@@ -255,16 +261,18 @@ You can use fsop to leak the libc addresses within the file structure itself by 
 
 In glibc 2.39 many code execution paths have been patched so we can mostly only rely on fsop, which is exactly what was done, I used _IO_wdoallocbuf+43 code path for code execution. It is mentioned here in niftic's [blog](https://niftic.ca/posts/fsop/) and referred [blog](https://faraz.faith/2020-10-13-FSOP-lazynote/) for the structure.
 
-[+] PART 3 COMPLETE : CODE EXECUTION
+>[!tip] PART 3 COMPLETE : CODE EXECUTION
 
 Thats it for `a silence of 3 parts`
 
 I dont know if this warrants to being a house but if it was I would call it House of pain :) enough with the unfunny jokes then :D.
 I wanted to blood the challenge but couldn't due to how complicated this exploit got but the challenge was worth solving, felt like I re-explored malloc though, I reccomend this as a challenge I've had fun with despite the painfulness of some of the parts of this exploit. I would not have solved this challenge the intended way even If i could have gotten the script done cause of my connection speed which is as slow as a sloth, well at least got a third blood (\`o\`)/.
 
-If you have any queries regarding this or if I missed something or If you just want to talk about pwning im [\_r0r1\_](discordapp.com/users/_r0r1_) in discord
+If you have any queries regarding this or if I missed something or If you just want to talk about pwning I'm  [\_r0r1\_](discordapp.com/users/_r0r1_) in discord
 
-And thats about it Here is my exploit for the same > 
+And that's about it Here is my exploit for the same > 
+
+#### EXPLOIT 
 
 ```py
 from pwn import *
@@ -624,5 +632,6 @@ p.interactive()
 ```
 
 
-PREVIOUS WRITEUP ---[[POTLUCKCTF-2023]]
+> [!quote]-
+> New phrack zine dropped go read it byee : D
 
