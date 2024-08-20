@@ -12,6 +12,8 @@ ___
 
 ##### TOTAL SOLVES : 3
 
+PREVIOUS :: [[POTLUCKCTF-2023]]
+
 IDEKCTF 2024 was a fun ctf with many cool pwn challenges but I kind of got hung up on this one challenge throughout the ctf. I used the trick from the previous post to improve the odds with this challenge - I will re-explain it as I didnt go as much in depth with the other one.
 
 ___
