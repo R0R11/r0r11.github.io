@@ -10,7 +10,7 @@ date: 02-06-2024
 ___
 ### TAMAGOYAKI << POTLUCK CTF 2023
 
-NEXT :: [[POTLUCKCTF-2023]]
+NEXT :: [[IDEKCTF-2024]]
 ##### CODE REVIEW -
 The code has the following functions 
 - dinner()
