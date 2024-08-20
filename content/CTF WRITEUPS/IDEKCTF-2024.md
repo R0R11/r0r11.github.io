@@ -3,7 +3,7 @@ title: IDEKCTF 2024 - A SILENCE OF 3 PARTS
 draft: false
 tags:
   - blog
-  - heap_exploitation
+  - heap-exploitation
   - ctf-writeups
 date: 19-08-2024
 ---
