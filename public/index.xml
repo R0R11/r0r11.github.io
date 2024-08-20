@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+      <title>R0R1</title>
+      <link>https://R0R11.github.io</link>
+      <description>Last 10 notes on R0R1</description>
+      <generator>Quartz -- quartz.jzhao.xyz</generator>
+      <item>
+    <title>IDEKCTF 2024 - A SILENCE OF 3 PARTS</title>
+    <link>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</link>
+    <guid>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</guid>
+    <description>...</description>
+    <pubDate>Tue, 20 Aug 2024 15:20:14 GMT</pubDate>
+  </item><item>
+    <title>BINARY-EXPLOITATION</title>
+    <link>https://R0R11.github.io/BINARY-EXPLOITATION</link>
+    <guid>https://R0R11.github.io/BINARY-EXPLOITATION</guid>
+    <description>This is the documentation of my journey into binary exploitation and computer science as a whole, not having done anything related to computer science until my college first year, ...</description>
+    <pubDate>Tue, 20 Aug 2024 15:14:14 GMT</pubDate>
+  </item><item>
+    <title>STACK-BASED-EXPLOITATION</title>
+    <link>https://R0R11.github.io/STACK-BASED-EXPLOITATION</link>
+    <guid>https://R0R11.github.io/STACK-BASED-EXPLOITATION</guid>
+    <description></description>
+    <pubDate>Wed, 06 Mar 2024 05:00:00 GMT</pubDate>
+  </item><item>
+    <title>ENTRYPOINT</title>
+    <link>https://R0R11.github.io/</link>
+    <guid>https://R0R11.github.io/</guid>
+    <description>This is a blog where I will store all of my binary exploitation notes. Entrypoint : BINARY-EXPLOITATION.</description>
+    <pubDate>Wed, 06 Mar 2024 05:00:00 GMT</pubDate>
+  </item><item>
+    <title>POTLUCKCTF-2023 TAMAGOYAKI</title>
+    <link>https://R0R11.github.io/CTF-WRITEUPS/POTLUCKCTF-2023</link>
+    <guid>https://R0R11.github.io/CTF-WRITEUPS/POTLUCKCTF-2023</guid>
+    <description>heap_exploitationwriteups TAMAGOYAKI &lt;&lt; POTLUCK CTF 2023 CODE REVIEW - The code has the following functions dinner() Checks if a byte sequence exist in an mmapped region ...</description>
+    <pubDate>Tue, 06 Feb 2024 05:00:00 GMT</pubDate>
+  </item><item>
+    <title>KERNEL EXPLOITATION</title>
+    <link>https://R0R11.github.io/KERNEL-EXPLOITATION</link>
+    <guid>https://R0R11.github.io/KERNEL-EXPLOITATION</guid>
+    <description>This is where I would update my Kernel exploitation notes after I am through some of it.</description>
+    <pubDate>Tue, 06 Feb 2024 05:00:00 GMT</pubDate>
+  </item><item>
+    <title>HEAP EXPLOITATION</title>
+    <link>https://R0R11.github.io/LEARNING-NOTES/HEAP-EXPLOITATION</link>
+    <guid>https://R0R11.github.io/LEARNING-NOTES/HEAP-EXPLOITATION</guid>
+    <description>These are my heap exploitation notes :) PREVIOUS &gt;&gt; MALLOC SRC CODE AUDIT NEXT &gt;&gt; UNSAFE-UNLINK This is the beginning of my documentation of the heap exploitation challenges ...</description>
+    <pubDate>Tue, 06 Feb 2024 05:00:00 GMT</pubDate>
+  </item><item>
+    <title>MALLOC SRC CODE AUDIT</title>
+    <link>https://R0R11.github.io/LEARNING-NOTES/MALLOC-SRC-CODE-AUDIT</link>
+    <guid>https://R0R11.github.io/LEARNING-NOTES/MALLOC-SRC-CODE-AUDIT</guid>
+    <description>PREVIOUS &gt;&gt; MALLOC LABS THIS IS A SOURCE CODE AUDIT OF MALLOC.C FROM [GLIBC 3.8.9000] I did the following audit a while back in october last year I am putting out the following ...</description>
+    <pubDate>Tue, 06 Feb 2024 05:00:00 GMT</pubDate>
+  </item>
+    </channel>
+  </rss>

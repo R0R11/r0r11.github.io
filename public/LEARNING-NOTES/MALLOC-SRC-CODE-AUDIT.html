@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>MALLOC SRC CODE AUDIT</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM Plex Mono&amp;family=Reddit Mono:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;display=swap"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta property="og:title" content="MALLOC SRC CODE AUDIT"/><meta property="og:description" content="PREVIOUS &amp;gt;&amp;gt; MALLOC LABS THIS IS A SOURCE CODE AUDIT OF MALLOC.C FROM [GLIBC 3.8.9000] I did the following audit a while back in october last year I am putting out the following ..."/><meta property="og:image" content="https://R0R11.github.io/static/og-image.png"/><meta property="og:width" content="1200"/><meta property="og:height" content="675"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="PREVIOUS &amp;gt;&amp;gt; MALLOC LABS THIS IS A SOURCE CODE AUDIT OF MALLOC.C FROM [GLIBC 3.8.9000] I did the following audit a while back in october last year I am putting out the following ..."/><meta name="generator" content="Quartz"/><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script></head><body data-slug="LEARNING-NOTES/MALLOC-SRC-CODE-AUDIT"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">R0R1</a></h2><div class="spacer mobile-only"></div><div class="search"><button class="search-button" id="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div id="search-container"><div id="search-space"><input autocomplete="off" id="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div id="search-layout" data-preview="true"></div></div></div></div><div class="darkmode"><input class="toggle" id="darkmode-toggle" type="checkbox" tabindex="-1"/><label id="toggle-label-light" for="darkmode-toggle" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg></label><label id="toggle-label-dark" for="darkmode-toggle" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></label></div><div class="explorer desktop-only"><button type="button" id="explorer" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;CTF-WRITEUPS&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;LEARNING-NOTES&quot;,&quot;collapsed&quot;:true}]" aria-controls="explorer-content" aria-expanded="false"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-content"><ul class="overflow" id="explorer-ul"><li><div class="folder-outer open"><ul style="padding-left:0;" class="content" data-folderul><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="CTF-WRITEUPS"><button class="folder-button"><span class="folder-title">CTF WRITEUPS</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="CTF-WRITEUPS"><li><a href="../CTF-WRITEUPS/IDEKCTF-2024" data-for="CTF-WRITEUPS/IDEKCTF-2024">IDEKCTF 2024 - A SILENCE OF 3 PARTS</a></li><li><a href="../CTF-WRITEUPS/POTLUCKCTF-2023" data-for="CTF-WRITEUPS/POTLUCKCTF-2023">POTLUCKCTF-2023 TAMAGOYAKI</a></li></ul></div></li><li><div class="folder-outer "><ul style="padding-left:0;" class="content" data-folderul></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="LEARNING-NOTES"><button class="folder-button"><span class="folder-title">LEARNING NOTES</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="LEARNING-NOTES"><li><a href="../LEARNING-NOTES/HEAP-EXPLOITATION" data-for="LEARNING-NOTES/HEAP-EXPLOITATION">HEAP EXPLOITATION</a></li><li><a href="../LEARNING-NOTES/MALLOC-SRC-CODE-AUDIT" data-for="LEARNING-NOTES/MALLOC-SRC-CODE-AUDIT">MALLOC SRC CODE AUDIT</a></li></ul></div></li><li><a href="../BINARY-EXPLOITATION" data-for="BINARY-EXPLOITATION">BINARY-EXPLOITATION</a></li><li><a href="../KERNEL-EXPLOITATION" data-for="KERNEL-EXPLOITATION">KERNEL EXPLOITATION</a></li><li><a href="../STACK-BASED-EXPLOITATION" data-for="STACK-BASED-EXPLOITATION">STACK-BASED-EXPLOITATION</a></li></ul></div></li><li id="explorer-end"></li></ul></div></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../LEARNING-NOTES/">LEARNING NOTES</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>MALLOC SRC CODE AUDIT</a></div></nav><h1 class="article-title">MALLOC SRC CODE AUDIT</h1><p show-comma="true" class="content-meta"><span>Feb 06, 2024</span><span>24 min read</span></p><ul class="tags"><li><a href="../tags/blog" class="internal tag-link">blog</a></li><li><a href="../tags/heap-exploitation" class="internal tag-link">heap-exploitation</a></li><li><a href="../tags/learning" class="internal tag-link">learning</a></li></ul></div></div><article class="popover-hint"><p>PREVIOUS >> <a href="../MALLOC-LABS" class="internal alias" data-slug="MALLOC-LABS">MALLOC LABS</a></p>
+<p>THIS IS A SOURCE CODE AUDIT OF MALLOC.C FROM  [GLIBC 3.8.9000]</p>
+<ul>
+<li>I did the following audit a while back in october last year</li>
+<li>I am putting out the following as I had went through glibc source code to learn heap exploitation</li>
+<li>Hopefuly it is of use even though the newer glibc just dropped</li>
+</ul>
+<h4 id="allocation-sizes-and-methods-">ALLOCATION SIZES AND METHODS —<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#allocation-sizes-and-methods-" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<hr/>
+<pre><code>requests of sizes -->
+- >=  512 bytes - best-fit allocation FIFO 
+- &lt;=   64 bytes - first fit caching LIFO?
+- >= 128K bytes - system memory mapping facilities --mmap
+
+ALIGNMENT - 2 * sizeof(size_t)
+	Even a request for zero bytes (i.e., malloc(0)) returns a
+	pointer to something of the minimum allocatable size.
+
+wastage is less than or equal to minsize usually but during mmap, allocation made is in the order of two pages.
+
+Values that appear to be negative after overhead and alignment are supported by only mmap. On failure of the following returns NULL.
+
+MALLOC_DEBUG DMALLOC_DEBUG and stuff can be used to run malloc while it checks across the size fields of the following.
+
+TCACHE_MAX_BINS     -     64
+TCACHE_FILL_COUNT   - no of chunks held by a bin - usually 7 max - 65535 UINT16
+idx 0   bytes 0..24 (64-bit) or 0..12 (32-bit)
+idx 1   bytes 25..40 or 13..20
+idx 2   bytes 41..56 or 21..28
+...
+
+REALLOC_ZERO_BYTES_FREES - controls if realloc(0) calls free [1 - default]
+TRIM_FASTBINS            - controls if to trim fastbins for reducing memory footprint and avoiding usage of system level emmory [0 - default] 
+
+M_MXFAST - Fastbin sizes range from 0 to 80 where 0 would disable it resulting in best-fit for all cases. set by the macro [64 - default]
+M_TRIM_THRESHOLD - [32*0x1000] can be set to -1 to disable it. Chooses when to trim the heap by checking this value.
+M_TOP_PAD        - [0] amount of padding/free space to retain while giving a call to sbrk
+M_MMAP_THRESHOLD - [32*0x1000] has MIN AND MAX VALUES MIN HAS FOLLOWING WHILE MAX HAS 128 * 0X1000
+M_MMAP_MAX       - 65536
+
+</code></pre>
+<h5 id="libc-functions-for-memory-management-">LIBC FUNCTIONS FOR MEMORY MANAGEMENT :<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#libc-functions-for-memory-management-" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="c" data-theme="github-light github-dark"><code data-language="c" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_malloc]  (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)         </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> allocating memory</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_free  ]  (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">void</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)         </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> freeing up memory once used</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_calloc]  (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)  </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> allocating and </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">ing memory</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_realloc] (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">void</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)  </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> reallocating memory</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_memalign](</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)  </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> aligning memory to </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_valloc]  (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)         </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> system mem allocation</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_mallocinfo]               </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> gets info related to malloc</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__libc_pvalloc] (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)         </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> allocate sys</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">mem pagealigned</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[__malloc_trim]  (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)         </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> gives mem back to system</span></span>
+<span data-line> </span></code></pre></figure>
+<h5 id="morecore">MORECORE<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#morecore" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<ul>
+<li>Used to obtain memory from the OS through sbrk</li>
+</ul>
+<pre><code>MORECORE            - type usually sbrk
+MORECORE_FAILURE    - defines if morecore failed
+MORECORE_CONTIGUOUS - defines if allocation is contiguous
+MORECORE_CLEARS     - defines 0ing out of memory
+HAVE_MREMAP         - allows the remapping of blocks
+</code></pre>
+<h4 id="structure-of-chunk">STRUCTURE OF CHUNK:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#structure-of-chunk" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="c" data-theme="github-light github-dark"><code data-language="c" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">malloc chunk{</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> prev_size</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> chunk_size</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">// used when only free -- all blocks</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">chunk </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> fd;    </span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">chunk </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> bk;</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">// used in only large blocks and if free</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">chunk </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> fd_nextsize </span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">chunk </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> bk_nextsize</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}</span></span></code></pre></figure>
+<pre><code>EXCEPTIONS TO THE MALLOC CHUNK RULES --
+- Top chunk does not use the trailing size field as it does not have any data beyond it
+- If the mmapped bit is set then the other bits are ignored as the mmapped memory do not belong in an arena or are never adjacent to a freed chunk
+- Fastbin chunks are consolidated only in bulk in malloc_consolidate else they are considered as allocated
+</code></pre>
+<h5 id="memory-tagging">MEMORY TAGGING<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#memory-tagging" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>The malloc functions which has a prefix <code>__int_</code> to it are used to deal with untagged memory.</p>
+<h4 id="important-structures-that-manage-memory">IMPORTANT STRUCTURES THAT MANAGE MEMORY<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#important-structures-that-manage-memory" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<h5 id="bins-">BINS :<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#bins-" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Bins is the version of a segregated linked list in malloc which is in size-ordered fashion. There are in total 128 bins whose inner sizes are logarithmically spaced. Bins work in a FIFO approach.
+The following is the way the bins are split</p>
+<pre><code>64 bins of size        8
+32 bins of size        64
+16 bins of size       512
+ 8 bins of size      4096
+ 4 bins of size     32768
+ 2 bins of size    262144
+ 1 bin  of size  what's left
+</code></pre>
+<h5 id="unsorted-bins-">UNSORTED BINS :<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#unsorted-bins-" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Unsorted chunks are stored at the bin 1 which is usually un-indexable. It acts like a queue where chunks are placed on it due to free and malloc_consolidate and taken off during calls to malloc i.e placed in proper bins or to be used. NON_MAIN_ARENA flag is never set in these chunks.</p>
+<h5 id="top-chunk">TOP CHUNK:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#top-chunk" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Top chunk is the top most available chunk which is never included in any bin and is only used if no other chunk is available. Memory here can be released back to the system if above M_TRIM_THRESHOLD. Top points to its own bin with initial size as 0. This is to avoid any special case checking for the top chunk every time any function is being called. The following also helps top to treat the bin as legal but unusable during the time between initialisation and first call to sysmalloc. During first call initial_top is defined as one of the unsorted_chunks.</p>
+<h5 id="binmap">BINMAP:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#binmap" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Binmap is a one-level index structure [a bit vector] used for bin-by-bin searching. It records if the bins are not empty so that they can be skipped during traversals. The bits are marked only when they are noticed during malloc traversal.</p>
+<h5 id="fastbins">FASTBINS:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#fastbins" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Segregated free list holding recently freed small chunks</p>
+<ul>
+<li>works on LIFO</li>
+<li>Singly linked lists</li>
+<li>Ordering doesnt matter</li>
+<li>Inuse bit is set and thus only consolidates during malloc_consolidate</li>
+</ul>
+<pre><code>default MAX_FAST_SIZE 180/0XA0 BYTES
+FASTBIN_CONSOLIDATION_THRESHOLD 65535 - size of a chunk in free that triggers auto-consolidation of nearby fastbin chunks. 
+NON_CONTIGOUS_BIT used when MORECORE returns memory which are not contigous regions. The initial value is false as MORECORE_CONTIGOUS is set to true.
+have_fastchunks indicate the presence of fastbin chunks, set to NULL during calls to malloc_consolidate().
+</code></pre>
+<p>max_fast can be changed which can even be set to very small values for disabling fastbins. The max memory handled in fastbins is defined by this global variable.
+Precondition: there is no existing fastbin chunks in the main arena.
+Since do_check_malloc_state () checks this, it calls malloc_consolidate () before changing max_fast.  Note other arenas will leak their fast bin
+entries if max_fast is reduced.</p>
+<h6 id="important-bits">IMPORTANT BITS:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#important-bits" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<pre><code>PREV_INUSE  - LOWEST BIT INDICATES IF PREVIOUS IS FREE OR IN USE
+IS_MMAPPED  - SECOND LOWEST > FOR CHECKING IF BLOCK WAS MMAPPED
+NON_MAIN_AR - THIRD LOWEST UNUSED WHEN NO NEW THREADS ARE THERE
+</code></pre>
+<h4 id="other-structures-used">OTHER STRUCTURES USED:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#other-structures-used" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<ul>
+<li>
+<h5 id="malloc_state">malloc_state<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#malloc_state" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+</li>
+</ul>
+<p>Malloced states are placed in mmapped areas which are part of arenas. It has the state of malloc and dynamic memory allocations within the current arena.
+mstates are operated on by the following functions:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="c" data-theme="github-light github-dark"><code data-language="c" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> void</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">sysmalloc</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (INTERNAL_SIZE_T,mstate);</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> int</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">   systrim</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">size_t</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,mstate);</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> void</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> malloc_consolidate</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (mstate);</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> void</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> tcache_thread_shutdown</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">void</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">);</span></span></code></pre></figure>
+<ul>
+<li>
+<h5 id="malloc_par">malloc_par<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#malloc_par" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+</li>
+</ul>
+<p>This is used for storing important parameters such as trim_threshold, top_pad, mmap_threshold, arena_test, arena_max etc.  Keeping track of mmapped memory and number of mmaps. sbrk_base. If tcache is enabled then the following parameters are specified within, no of tcache bins, no of chunks in each bucket, number of chunks to remove from bucket.</p>
+<h4 id="mitigations--">MITIGATIONS :-<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#mitigations--" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<hr/>
+<ol>
+<li>
+<ul>
+<li>SAFE LINKING
+To protect the single-linked list of Fast-Bins and T-Cache and double linked list of Small-Bins from getting pointer hijacked, Masking is done to the “next” pointers of the lists in the chunks using the randomness from ASLR/(mmap_base). In short a simple xor with the upper bytes of the memory page the current requested chunk lies in i.e
+[pointer ^ ptr >> 12]
+demasking code —</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>works when the pointer points to the memory lying within the same page</li>
+</ul>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="python" data-theme="github-light github-dark"><code data-language="python" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">	hex</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">((encoded </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">^</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (encoded </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">>></span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 12</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">^</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (encoded </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">>></span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 24</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">^</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (encoded </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">>></span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 36</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">))</span></span></code></pre></figure>
+<ol start="2">
+<li>
+<ul>
+<li>MEMORY TAGGING
+The pointers alongside the blocks are coloured and they are recoloured when they are freed and given back. This is used to detect buffer overflows and use-after-frees. This has a performance impact but the old ptr’s are ensured to not be used due to this. usually DISABLED. But can be enabled in systems such as ARM.</li>
+</ul>
+</li>
+<li>
+<ul>
+<li>DOUBLE FREE DETECTION
+The tcache entry has a key field in the backward pointer to detect double frees. The backward pointer is set to this specific key value which then prevents it from being overwrittten and freed again.</li>
+</ul>
+</li>
+</ol>
+<h4 id="debug-mode-malloc-functions">DEBUG-MODE MALLOC FUNCTIONS:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#debug-mode-malloc-functions" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<h5 id="do_check_chunk-mstate-avmchunkptr-p">do_check_chunk (mstate av,mchunkptr p)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_chunk-mstate-avmchunkptr-p" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Checks if the chunk is in a valid address if it is contigous
+Checks if top size is at least MINSIZE
+Checks if top predecessor is always marked inuse
+Checks if top size is always greater than MINSIZE
+IF MMAPPED
+checks if chunk is page aligned
+checks if chunk is mem aligned</p>
+</blockquote>
+<h5 id="do_check_free_chunk-mstate-av-mchunkptr-p">do_check_free_chunk (mstate av, mchunkptr p)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_free_chunk-mstate-av-mchunkptr-p" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Calls do_check_chunk()
+Checks if chunk is free and chunk is not mmapped
+Checks if chunk remains coalesced if any
+Checks if it has proper links</p>
+</blockquote>
+<h5 id="do_check_inuse_chunk-mstate-av-mchunkptr-p">do_check_inuse_chunk (mstate av, mchunkptr p)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_inuse_chunk-mstate-av-mchunkptr-p" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Calls do_check_chunk()
+Checks if chunk is mmapped if yes it returns
+else it checks if the chunk claims to be inuse
+checks if next chunk claims to be prev inuse if not it checks for a free chunk by calling do_check_free_chunk()
+Checks topchunk by calling do_check_free_chunk on top</p>
+</blockquote>
+<h5 id="do_check_remalloced_chunk-mstate-av-mchunkptr-pinternal_size_t-s">do_check_remalloced_chunk (mstate av, mchunkptr p,INTERNAL_SIZE_T s)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_remalloced_chunk-mstate-av-mchunkptr-pinternal_size_t-s" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Checks if chunk is mmapped if not checks if arena is same as obtained
+Calls do_check_inuse_chunk()
+Checks if the size is valid alongside alignment
+Checks if chunk is less than minsize or more than requested size “s”
+All of these results in a fail</p>
+</blockquote>
+<h5 id="do_check_malloced_chunk-mstate-av-mchunkptr-p-internal_size_t-s">do_check_malloced_chunk (mstate av, mchunkptr p, INTERNAL_SIZE_T s)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_malloced_chunk-mstate-av-mchunkptr-p-internal_size_t-s" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Calls do_check_remalloced_chunk()
+Prev inuse is true for every allocated chunk</p>
+</blockquote>
+<h5 id="do_check_malloced_state-mstate-av">do_check_malloced_state (mstate av)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#do_check_malloced_state-mstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<blockquote>
+<p>Checks if INTERNAL_SIZE_T is only as small as pointer type
+Checks if alignment is a power of two
+Checks if the arena is initialised i.e top!=0 if yes it returns
+ELSE checks the consistency of the main_arena with the sbrk base
++
+FASTBIN CHECKS
+Check if max_fast is only in the allowed range
+Checks if all bins past max_fast are empty
+Checks if all fastbin chunks claim to be inuse and is aligned
+Checks if the chunk belongs to the respective bin
++
+NORMBIN CHECKS
+Checks if the binmap is correct
+Checks if the chunks in the bin are free
+Checks if chunk belongs in the bin
+Checks if the lists are sorted
+Checks if the chunk lists are proper.
+Check the top chunk again by calling check_chunk()
+Check if the induvidual chunks are followed by a chain of inuse chunks</p>
+</blockquote>
+<h4 id="specific-function-summaries">SPECIFIC FUNCTION SUMMARIES<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#specific-function-summaries" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<hr/>
+<h5 id="unlink_chunk--">Unlink_chunk -<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#unlink_chunk--" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Unlinks a chunk from the bin list.
+list of checks —</p>
+<ol>
+<li>checks if the prev_size of next chunk is same as the chunksize else returns corrupted size vs. prev size</li>
+<li>checks if the forward pointer of the previous is same as the backward pointer of the next field, else marks corrupted double-linked list.</li>
+<li>Checks if the pointer is small by checking fd_nextsize and bk_nextsize</li>
+</ol>
+<h5 id="get_max_fast--">get_max_fast() -<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#get_max_fast--" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>checks if the global variable max_fast is greater than MAX_FAST_SIZE macro and if yes it calls an error else it returns global_max_fast. This is to prevent out of bound memory access in an array form.</p>
+<h4 id="system-allocation-routines">SYSTEM ALLOCATION ROUTINES:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#system-allocation-routines" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<hr/>
+<h5 id="sysmalloc_mmap-internal_size_t-nbsize_t-pagesizeint-extra_flagsmstate-av">Sysmalloc_mmap (INTERNAL_SIZE_T nb,size_t pagesize,int extra_flags,mstate av)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#sysmalloc_mmap-internal_size_t-nbsize_t-pagesizeint-extra_flagsmstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Calls mmap on behalf of malloc with the specified size nb and flags
+returns if the call to mmap fails and assumes av<span>→</span>top doesnt have enough space to service the request.
+list of checks —</p>
+<ol>
+<li>Checks if the mmap size value wraps around zero, if yes the call fails
+Other things it does —</li>
+<li>If flags are lacking for a very large allocation advises kernel using madvice() which calls madvise() with advise as HUGE_PAGE</li>
+<li>Calls mmap and sets the header and footer with the aligned size field always aligns it despite no chances of page-aligned memory not being aligned.</li>
+<li>Updates n_mmaps and max_mmapped_memoryCalls check_chunk()</li>
+<li>returns pointer to mmapped memory</li>
+</ol>
+<h5 id="sysmalloc_mmap_fallback-long-int-sinternal_size_t-nb-internal_size_t-old_sizesize_t-minsize-size_t-pagesize-int-extra_flagsmstate-av">Sysmalloc_mmap_fallback (long int *s,INTERNAL_SIZE_T nb, INTERNAL_SIZE_T old_size,size_t minsize, size_t pagesize, int extra_flags,mstate av)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#sysmalloc_mmap_fallback-long-int-sinternal_size_t-nb-internal_size_t-old_sizesize_t-minsize-size_t-pagesize-int-extra_flagsmstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Used as a fallback if MORECORE fails to provide enough memory.
+list of checks —</p>
+<ol>
+<li>Checks if the mmap size value wraps around zero, if yes the call fails
+Other things that this does —</li>
+<li>Sets as noncontigous in the arena so as to mark the region as not part of the original heap so as to not rely on regions being contigous</li>
+</ol>
+<h5 id="sysmalloc-internal_size_t-nb-mstate-av">sysmalloc (INTERNAL_SIZE_T nb ,mstate av)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#sysmalloc-internal_size_t-nb-mstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>The call has a precondition that it is only called if the top has lesser space than what is required.
+list of checks —</p>
+<ul>
+<li>Checks if the current top has the prev_inuse set and if its aligned alongside having at least MINSIZE value.
+It does the following functions —</li>
+</ul>
+<ol>
+<li>Direct call to mmap if the size meets mmap_threshold and mmap is there and av == NULL, i.e no arena</li>
+</ol>
+<blockquote>
+<p>if the mmap call fails then it returns 0 else av is set to the new mmaped region.</p>
+</blockquote>
+<ol start="2">
+<li>if av != main_arena this means that memory cant be obtained using sbrk so
+-<span>⇒</span> Tries to grow current heap by trying to mprotect memory
+-<span>⇒</span> if failed tries to allocate new heap
+-<span>⇒</span> if failed calls mmap using sysmalloc_mmap() if tried is not set
+-<span>⇒</span> if failed returns idk cause if MAP_FAILED it considers av as main arena and goes to the else block. .. wierd maybe it just returns…</li>
+<li>If av== main_arena Page aligns the size and calls MORECORE which gets memory from OS through sbrk.
+-<span>⇒</span> if MORECORE fails then sysmalloc_mmap_fallback() is used
+-<span>⇒</span> if failed sets brk as MAP_FAILED and snd_brk as brk+size
+If previous routine doesnt fail then extends top and sets head</li>
+<li>It checks if there was an intervening sbrk call and if there was it calls sbrk with a correction amount which ends at a page boundary. This is what happens when the memory is contigous. If not contigous the sbrk call is made with argument 0 which will help to set up footers and move to another chunk.</li>
+<li>When sbrk is checked if a gap is present between the previous sbrk call and top chunk then it sets it as correction and artificial chunks are created around it which are set to always inuse. These are described as fenceposts in the source. When setting up such fenceposts the old top can completely be overwritten due to it, if in case it was of size <span>→</span> MINSIZE. If there is remaining size after setting up the fenceposts it is freed and added to the unsorted bins.
+After all of the following is done the function checks if at least one of the following paths succeed setting the size. This returns the pointer p which would be our allocated memory address.
+If failed it sets the error and returns zero.</li>
+</ol>
+<h5 id="systrimsize_t-padmstate-av">Systrim(size_t pad,mstate av)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#systrimsize_t-padmstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>It does the following</p>
+<ol>
+<li>It checks for foreign sbrk calls and returns 0 if a external call was made</li>
+<li>It page aligns pad and subtracts that amount from the top chunk and also unmaps by calling sbrk with -ve value of the amount.</li>
+<li>It checks if the released amount is not 0, it returns 1 after adjusting top by subtracting released amount and sets head and calls check_malloc_state()</li>
+</ol>
+<h5 id="munmap_chunkmchunkptr-p">munmap_chunk(mchunkptr p)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#munmap_chunkmchunkptr-p" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>The following is what the function does</p>
+<ol>
+<li>It makes sure the given ptr is a mmapped ptr : bit 2 is set and that the ptr is a multiple of pagesize and 2</li>
+<li>If yes it unmaps the pointer if it fails the program simply returns claiming nothing much can be done.</li>
+</ol>
+<h5 id="mremap_chunkmchunkptr-p-size_t-new_size">mremap_chunk(mchunkptr p, size_t new_size)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#mremap_chunkmchunkptr-p-size_t-new_size" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>calls mremap if the newsize versus total size has an increase  or decrease in number of pages. if failed returns 0,
+<span>→</span> checks alignment
+<span>→</span> checks prev field on if it is set to true always
+<span>→</span> sets header with the required offset subtracted from it
+<span>→</span> returns the pointer p when it succeeds</p>
+<hr/>
+<h4 id="tcache-functions-">TCACHE FUNCTIONS :<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#tcache-functions-" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>TCACHE ENTRY STRUCTURE</p>
+<hr/>
+<pre><code>struct tcache_entry {
+
+struct tcache_entry *next;
+
+// key to prevent double frees
+uintptr_t key;
+
+}
+</code></pre>
+<p>Tcache backward pointer will have a specific key value of 64 bits which is placed to denote that the chunk has been freed once. This is used against bugs such as double-frees().</p>
+<ul>
+<li>There is a <code>tcache_perthread_struct</code> which has the number of bins and pointer to the entries and the structure is a global variable within libc</li>
+<li>Tcache key that exists are initialised by the <code>tcache_key_initialise</code>function</li>
+</ul>
+<blockquote>
+<p>The caller should verify if everything’s good when calling <code>tcache_put</code></p>
+</blockquote>
+<ul>
+<li><code>tcache_put</code> - sets the key to be the tcache_key - which is a global variable and protects the pointer and puts it in updating the tcache index.</li>
+<li><code>tcache_get_n</code> -  checks if a chunk is aligned and returns the following chunk after unlinking it from the tcache list, same is with <code>tcache_get</code> but it instead removes from front.</li>
+<li><code>tcache_next</code> iterates through the list</li>
+<li><code>tcache_shutdown</code> Shuts down tcache and frees all the lists held by tcaching for coalescing after an alignment check.</li>
+<li><code>tcache_init</code> - It does not work when tcache_shutting_down variable is set.</li>
+</ul>
+<h4 id="libc-functions-mallocfree">LIBC FUNCTIONS MALLOC/FREE<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#libc-functions-mallocfree" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<h5 id="__libc_mallocsize_t-bytes">__libc_malloc(size_t bytes)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#__libc_mallocsize_t-bytes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>CHECKS MADE -</p>
+<ul>
+<li>Checks if the memory returned by __int_malloc() calls are proper
+Functionality of code -</li>
+</ul>
+<ol>
+<li>If <code>__malloc_initialised</code> is set to zero it calls <code>ptmalloc_init()</code> to initialise malloc. Else it proceeds and converts size to accomodate headers and to check if it is zero even after that. If yes it returns error.</li>
+<li>Else it continues with converting the size to a tcache index if tcache is uninitialised or bins are less than index it doesnt use tcache else it gets the chunk from the specified index if the value is greater than 0 by using <code>tcache_get(index)</code></li>
+<li>If single threaded it calls <code>__int_malloc()</code> which returns a ptr which is then memory tagged if tagging is enabled else it returns the pointer to the memory returned by <code>__int_malloc()</code></li>
+<li>Else it tries to get the arena which it belongs to and then calls _int_malloc. if it fails then it retries with another usable arena by calling <code>arena_get_retry()</code> which either creates a new arena or looks for another one.</li>
+<li>It returns after tagging the memory and asserting that either the returned memory belongs in the same arena as it claims or doesnt exist or is mmaped.</li>
+</ol>
+<h5 id="__libc_freevoid-mem">__libc_free(void *mem)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#__libc_freevoid-mem" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>CHECKS PRESENT —
+Functionality of the code —</p>
+<ol>
+<li>free (0) just returns</li>
+<li>If mtags are enabled then it checks the pointer given with the tag applied to it, useful against double-free().</li>
+<li>It checks if the pointer given to is of an mmapped region separate from the normal malloc routine, checks upper and lower malloc threshold with the size and also checks if dynamic threshold (user defined) is enabled. If yes it updates the threshold to the chunksize and the trim threshold to twice the mmap threshold. After which the chunk is unmapped.</li>
+<li>Else It initialises tcache if not yet initialised, and tags memory if mtags enabled and gets the arena and calls  <code>_int_free()</code></li>
+<li>If none of the following occurs it sets error and returns</li>
+</ol>
+<h5 id="__libc_reallocvoid-oldmem-size_t-bytes">__libc_realloc(void *oldmem, size_t bytes)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#__libc_reallocvoid-oldmem-size_t-bytes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>CHECKS DONE —</p>
+<ul>
+<li>realloc() has a wraparound check for the size field which checks if the value of size could be malicously crafted or misplaced.
+Functionality of code —</li>
+</ul>
+<ol>
+<li>If malloc is not initialised then it calls ptmalloc_init()</li>
+</ol>
+<blockquote>
+<p>if size is 0 it frees if the REALLOC_ZERO_BYTE_FREES macro is active else realloc of null gives same results as malloc of null</p>
+</blockquote>
+<ol start="2">
+<li>mtag checks are done if mtag is enabled.</li>
+</ol>
+<blockquote>
+<p>If the size requested is fullfilled by the alignment padding then the same pointer is returned as such.</p>
+</blockquote>
+<ol start="3">
+<li>If the chunk is mmapped then it sets arenaptr to <code>NULL</code> else if tcache is not initialised it initializes tcache. and sets ar_ptr to arena_for_chunk. If chunk is mmapped or after headers the size field is 0 it exits.</li>
+<li>If chunk was mmaped it uses mremap to remap the current chunk and tags the memory again with a different tag. Else if remap is not enabled then it uses a malloc call to allocate space. If memory is returned then it returns memory after unmapping previous chunk and copying content.</li>
+<li>If the process is single threaded then it calls <code>_int_realloc()</code> and asserts the returned pointer either is <code>NULL</code> or is mmapped or is ar_ptr is arena_for_chunk() If memory is failed to be obtained in one arena it checks or allocates memory through other arenas and returns a pointer to memory.</li>
+</ol>
+<h5 id="_mid_memalignsize_t-alignment-size_t-bytes-void-addr">_mid_memalign(size_t alignment, size_t bytes, void *addr)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#_mid_memalignsize_t-alignment-size_t-bytes-void-addr" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Functionality of the code —</p>
+<ol>
+<li>__libc_malloc() is called if alignment is less or equal to malloc_alignment. Else it ensures it is a minimum chunk size. If the alignment is greater than SIZE_MAX /2 + 1 it can cause an overflow thus it sets error and exits.</li>
+<li>It checks if alignment is a power of two.</li>
+<li>If tcache is enabled gets tcache alongside checking all instances of pointers within the tcache is aligned. If tagging of memory is present then tagging is done and the pointer is returned. If no tcache mem or no tcache then does next.</li>
+<li>If it is single threaded process it just calls _int_memalign() If the arena does not have enough space then it tries to get a new arena and then returns the tagged memory after finding the arena for chunk.</li>
+</ol>
+<h5 id="__libc_valloc-size_t-bytes">__libc_valloc (size_t bytes)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#__libc_valloc-size_t-bytes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Functionality of the code —
+Same functionality as malloc() but the memory returned by calls to valloc are page-aligned memory. It just calls mid_memalign but with pagesize argument. Same with libc_pvalloc() but it has an overflow check in the rounded_bytes given by pagesize</p>
+<h5 id="__libc_calloc-size_t-n-size_t-elem_size">__libc_calloc (size_t n, size_t elem_size)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#__libc_calloc-size_t-n-size_t-elem_size" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Functionality of the code —</p>
+<ol>
+<li>Checks if the malloc_initialised flag is set, if not initialise malloc.  If tcache remains unitiated initiate tcache. If it is a single threaded process then it sets av as mainarena and then if av exists,</li>
+<li>Morecore clears flag is set then it gives by cutting from topsize. This means the normal morecore routine zeros memory if its greater than Minsize then the memory newly allocated is sure to be clear.</li>
+<li>While using mtags the whole memory is zeroed out irrespective of the morecore_clears flag. If the memory is not freshly sbrked then only the clearing happens.</li>
+</ol>
+<h4 id="core-functions">CORE FUNCTIONS<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#core-functions" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<h5 id="_int_malloc-mstate-av-size_t-bytes"><em>_int_malloc (mstate av, size_t bytes)</em><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#_int_malloc-mstate-av-size_t-bytes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>The functionality of the code —</p>
+<ol>
+<li>Converts the requested size by padding it with the overhead size and checking with checked_request2size which checks for requests that wraps around 0.</li>
+<li>Checks for if any usable arenas exist >>
+<ul>
+<li>If yes it continues</li>
+<li>Else it calls sysmalloc instead with null which then sets up a region of memory, The arena checks were done previously in outer libc functions thus the following call is made directly without checking</li>
+</ul>
+</li>
+<li>CHECK IF SIZE QUALIFIES AS FASTBIN —
+<ul>
+<li>Checks if the memory within fastbin is greater than the chunk</li>
+<li>Checks if there is an available fastbin pointer in the index
+<ul>
+<li>Checks if it is aligned if yes proceeds else calls error align fastbin</li>
+<li>Checks if chunksize belongs in fastbin if failed calls mem corruption:fastbin</li>
+<li>else calls check_remalloced_chunk</li>
+</ul>
+</li>
+<li>If encountered other chunks of same size puts them into tcache if tcache_enabled. During this another fastbin check is present which checks for alignment of fastbins.</li>
+<li>After putting them in the tcache we return the pointer to the memory and return from the function. if perturb byte present does memset .</li>
+</ul>
+</li>
+<li>CHECK IF THE SIZE QUALIFIES IN THE RANGE OF A SMALL BIN
+<ul>
+<li>Does the backward to forward check but not forward to back</li>
+<li>If the av not main arena then sets non main arena bit</li>
+<li>tcache stashing occurs same as in fastbins and is unlinked from smallbins</li>
+<li>The function returns the pointer finally which is of the requested size</li>
+</ul>
+</li>
+<li>CHECK IF THE SIZE QUALIFIES IN THE RANGE OF A LARGE BIN
+<ul>
+<li>When a large request is called it calls malloc_consolidate to free up fast bins and make memory available.</li>
+<li>Sets the index to a large bin index, sets the tc_idx to a tcache index</li>
+</ul>
+</li>
+<li>Does an infinite loop
+<ol>
+<li>CASE 1</li>
+</ol>
+<ul>
+<li>Starts looking at unsorted bins to satisfy request.</li>
+<li>Multiple checks are made to check for memory corruption</li>
+<li>Checks if it is the only unsorted chunk and if yes checks for the last remainder if the chunk was the last remainder then if the current size is satisfied the chunk is alloted and pointer is returned</li>
+</ul>
+<ol start="2">
+<li>CASE 2</li>
+</ol>
+<ul>
+<li>If the first fails it tries to fill tcache if it is best fit.</li>
+<li>If tcache is full then it tries to return if it is exact fit</li>
+<li>Goes for smallbin first
+<ul>
+<li>places the chunk in the bin</li>
+</ul>
+</li>
+<li>Goes for largebin next
+<ul>
+<li>places the chunk in sorted order</li>
+<li>Has the forward and backward ptr check alongside the _nextsize field check</li>
+</ul>
+</li>
+<li>If the tcache processing is complete it returns the tcached chunk at the index</li>
+<li>If iteration exceeds 10000 it breaks</li>
+<li>If all the small chunks found ended up cached return one</li>
+<li>If it is a large request scan through the chunks of the current bin in sorted order to find the smallest that fits , uses a skiplist</li>
+<li>Finally it puts the remaining size after allocation into the unsorted bins</li>
+</ul>
+</li>
+<li>LOOKS THROUGH THE BINMAP
+<ul>
+<li>If a proper chunk is obtained same procedure occurs</li>
+</ul>
+</li>
+<li>SEES IF TOP CHUNK IS ENOUGH
+<ul>
+<li>If top chunk can satisfy the request the chunk is cut out and allocation is given</li>
+</ul>
+</li>
+<li>CALLS SYSMALLOC IF NOTHING WORKS TO ALLOCATE THROUGH SYSTEM</li>
+</ol>
+<hr/>
+<h5 id="_int_free-mstate-av-mchunkptr-pint-have_lock"><em>_int_free (mstate av, mchunkptr p,int have_lock)</em><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#_int_free-mstate-av-mchunkptr-pint-have_lock" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>The functionality of the code —</p>
+<ol>
+<li>Checks if the given pointer is misaligned or if the size is less than minsize, if failed exits else checks the inuse chunk.</li>
+<li>TCACHE DUMPING —
+<ul>
+<li>If tcache is enabled then it checks to see if its already in the tcache if yes it detects a double free.</li>
+<li>If tcache count is greater than tcache_count var it states too many chunks and exits.</li>
+<li>It also checks alignment and exits if unaligned.</li>
+<li>If tcache putting worked then it returns</li>
+</ul>
+</li>
+<li>FASTBIN FORWARDING —
+<ul>
+<li>Again checks are made but it checks the top of fastbin alone to check if a double free occured in single thread, thus making bypass easy.</li>
+<li>In multi thread it checks all of the fastbins for a double free</li>
+<li>Then it gets a lock for it to add it to fastbin if it has a lock</li>
+</ul>
+</li>
+<li>UNSORTED BIN THROWAWAY —
+<ul>
+<li>Checks for double free corruption top , chunk boundary check , inuse check, invalid next size etc</li>
+<li>It tries to consolidate backward if previze is not same as chunksize it states corrupted prev size and exits</li>
+<li>It tries forward coalescing afterwards and unlinks the chunk and clears inuse bit.</li>
+<li>The following chunk is thrown into the unsorted bins and then check_free_chunk is called.</li>
+<li>If chunk borders top the chunk merges with the top</li>
+</ul>
+</li>
+<li>OTHERS
+<ul>
+<li>It calls malloc_consolidate() if the fastbin_consolidation_threshold is met. and if av is main arena it tries systrim() if trim threshold is met.</li>
+<li>Also tries heap_trim even if the top chunk is not large</li>
+<li>If chunk was allocated due to mmap it does a munmap_chunk() call which unmaps the chunk.</li>
+</ul>
+</li>
+</ol>
+<h5 id="malloc_consolidatemstate-av"><em>malloc_consolidate(mstate av)</em><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#malloc_consolidatemstate-av" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Checks —</p>
+<ul>
+<li>fastbin alignment check</li>
+<li>chunk size check</li>
+<li>during consolidation : prev_size check
+The functionality of the code —</li>
+</ul>
+<ol>
+<li>REMOVAL INTO UNSORTED BINS —
+<ul>
+<li>It removes each chunk from the fastbin into an unsorted bin so that only during requirements will the sorting into actual bins happen.</li>
+<li>After putting a fastbin chunk into an unsorted bin it does a consolidation of the fastbins</li>
+<li>If a fastbin chunk borders top chunk it merges down with the top chunk</li>
+</ul>
+</li>
+</ol>
+<h5 id="_int_reallocmstate-avmchunkptr-oldpsize_t-oldsizesize_t-nb"><em>_int_realloc(mstate av,mchunkptr oldp,SIZE_T oldsize,SIZE_T nb)</em><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#_int_reallocmstate-avmchunkptr-oldpsize_t-oldsizesize_t-nb" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>CHECKS MADE —</p>
+<ul>
+<li>Size check for next size, caller is filtered for mmapped chunks thus an assertion is made that the chunk is not mmapped.</li>
+<li>A check for size on old size on if it is valid.</li>
+</ul>
+<p>Functionality of the code —</p>
+<ul>
+<li>If it is already big enough it checks with the top chunk and coalesces down if next chunk is top chunk.</li>
+<li>If next chunk is not top chunk then it tries to expand forward into next chunk if it is free and the next is a remainder</li>
+<li>If nothing above works it allocates using _int_malloc
+<ul>
+<li>It does a copy if the newp obtained through malloc is not the very next chunk</li>
+<li>And it if it is the next chunk it extends the size and returns the given pointer itself.</li>
+</ul>
+</li>
+<li>If possible it tries to free extra space from the previous chunk and marks remainder as inuse so that free doesnt complain and then calls free on the remainder memory which can then put it into unsorted bins.</li>
+<li>If memory tagging is there it returns tagged memory else untagged</li>
+<li>Finally the function returns</li>
+</ul></article><hr/><div class="page-footer"></div></div><div class="right sidebar"><div class="graph"><h3>Graph View</h3><div class="graph-outer"><div id="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:2,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:false,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true}"></div><svg version="1.1" id="global-graph-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="#00D4F5" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+	s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+	c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+	C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+	c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+	v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+	s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+	C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+	S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+	s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+	s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></div><div id="global-graph-outer"><div id="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:false,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true}"></div></div></div><div class="backlinks"><h3>Backlinks</h3><ul class="overflow"><li><a href="../BINARY-EXPLOITATION" class="internal">BINARY-EXPLOITATION</a></li><li><a href="../LEARNING-NOTES/HEAP-EXPLOITATION" class="internal">HEAP EXPLOITATION</a></li></ul></div></div></div><footer class><p>Created with <a href="https://quartz.jzhao.xyz/">Quartz v4.3.0</a> © 2024</p><ul><li><a href="https://github.com/r0r11">GitHub</a></li></ul></footer></div></body><script type="application/javascript">function c(){let t=this.parentElement;t.classList.toggle("is-collapsed");let l=t.classList.contains("is-collapsed")?this.scrollHeight:t.scrollHeight;t.style.maxHeight=l+"px";let o=t,e=t.parentElement;for(;e;){if(!e.classList.contains("callout"))return;let n=e.classList.contains("is-collapsed")?e.scrollHeight:e.scrollHeight+o.scrollHeight;e.style.maxHeight=n+"px",o=e,e=e.parentElement}}function i(){let t=document.getElementsByClassName("callout is-collapsible");for(let s of t){let l=s.firstElementChild;if(l){l.addEventListener("click",c),window.addCleanup(()=>l.removeEventListener("click",c));let e=s.classList.contains("is-collapsed")?l.scrollHeight:s.scrollHeight;s.style.maxHeight=e+"px"}}}document.addEventListener("nav",i);window.addEventListener("resize",i);
+</script><script type="module">
+          let mermaidImport = undefined
+          document.addEventListener('nav', async () => {
+            if (document.querySelector("code.mermaid")) {
+              mermaidImport ||= await import('https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.esm.min.mjs')
+              const mermaid = mermaidImport.default
+              const darkMode = document.documentElement.getAttribute('saved-theme') === 'dark'
+              mermaid.initialize({
+                startOnLoad: false,
+                securityLevel: 'loose',
+                theme: darkMode ? 'dark' : 'default'
+              })
+
+              await mermaid.run({
+                querySelector: '.mermaid'
+              })
+            }
+          });
+          </script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js" type="application/javascript"></script><script type="application/javascript">
+        const socket = new WebSocket('ws://localhost:3001')
+        // reload(true) ensures resources like images and scripts are fetched again in firefox
+        socket.addEventListener('message', () => document.location.reload(true))
+      </script><script src="../postscript.js" type="module"></script></html>
