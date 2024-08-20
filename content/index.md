@@ -6,6 +6,6 @@ tags:
 date: 03-06-2024
 ---
 
-This is a blog where I will store all of my exploitation notes.
+This is a blog where I will store all of my binary exploitation notes.
 
 Entrypoint : [[BINARY-EXPLOITATION]]
