@@ -1,6 +1,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>
     <loc>https://R0R11.github.io/BINARY-EXPLOITATION</loc>
-    <lastmod>2024-08-20T04:18:34.075Z</lastmod>
+    <lastmod>2024-08-20T12:57:36.451Z</lastmod>
+  </url><url>
+    <loc>https://R0R11.github.io/CTF-WRITEUPS/IDEKCTF-2024</loc>
+    <lastmod>2024-08-20T13:05:23.836Z</lastmod>
   </url><url>
     <loc>https://R0R11.github.io/CTF-WRITEUPS/POTLUCKCTF-2023</loc>
     <lastmod>2024-02-06T05:00:00.000Z</lastmod>
@@ -15,5 +18,8 @@
     <lastmod>2024-02-06T05:00:00.000Z</lastmod>
   </url><url>
     <loc>https://R0R11.github.io/STACK-BASED-EXPLOITATION</loc>
+    <lastmod>2024-03-06T05:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://R0R11.github.io/</loc>
     <lastmod>2024-03-06T05:00:00.000Z</lastmod>
   </url></urlset>
