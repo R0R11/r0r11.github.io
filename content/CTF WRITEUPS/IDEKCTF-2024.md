@@ -100,7 +100,7 @@ To set the pointers I used a malloc consolidate of size 0x30 chunks to consolida
 
 The current setup resulted in me getting an overlapped largebin chunk. :D 
 
-> [!tip] PART 1 COMPLETE : GET OVERLAPPING CHUNKS
+> [!danger] PART 1 COMPLETE : GET OVERLAPPING CHUNKS
 
 ##### BUT WHAT NOW ? 
 
@@ -251,7 +251,7 @@ This can be done completely leakless and with 100% accuracy if you can have 2 ch
 Thus i chose size 0x28 as it gives me 2 chunks such that I can edit the last byte to reach the tcache struct. 
 We need this because editing more than 1 byte would lead to having to deal with aslr and bruting.
 
->[!tip] PART 2 COMPLETE : TCACHE PERTHREAD STRUCT CORRUPTION
+>[!danger] PART 2 COMPLETE : TCACHE PERTHREAD STRUCT CORRUPTION
 
 ##### DO WE GET A LEAK, ANYTIME SOON ?
 
@@ -261,7 +261,7 @@ You can use fsop to leak the libc addresses within the file structure itself by 
 
 In glibc 2.39 many code execution paths have been patched so we can mostly only rely on fsop, which is exactly what was done, I used _IO_wdoallocbuf+43 code path for code execution. It is mentioned here in niftic's [blog](https://niftic.ca/posts/fsop/) and referred [blog](https://faraz.faith/2020-10-13-FSOP-lazynote/) for the structure.
 
->[!tip] PART 3 COMPLETE : CODE EXECUTION
+>[!danger] PART 3 COMPLETE : CODE EXECUTION
 
 Thats it for `a silence of 3 parts`
 
