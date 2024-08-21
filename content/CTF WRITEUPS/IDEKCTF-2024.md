@@ -36,12 +36,12 @@ This is a leakless challenge where the only leak you get is by overwriting file 
 ___
 #### INTENDED : 
 
-You can check the challenge authors blog for that :D. I probably wouldnt have been able to come up with such an idea as explained here whenever it'll be up here -> [unvariant](https://unvariant.pages.dev/writeups/). Thus I had to come up with something unusual. I think you should go read the actual solution first before the current cause I feel one should always appreciate what the challenge was supposed to be before what it became.
+You can check the challenge authors blog for that :D. I probably wouldnt have been able to come up with such an idea as explained here, when it'll be up over here -> [unvariant](https://unvariant.pages.dev/writeups/). Thus I had to come up with something unusual. I think you should go read the actual solution first before the current cause I feel one should always appreciate what the challenge was supposed to be before what it became.
 
 ___
 #### UNINTENDED / MY APPROACH -
 
-In the description of the challenge the author mentioned that the aslr brute was not above `8 bits` to which initially my idea was to overwrite the lowest byte of a `tcache` chunk to get an 8 bit brute on an overlap which I could maybe use as a spray of size to reduce it to a 4 bit brute. But it seemed way too unreliable as for fsop also in the method that I knew of we needed another 4 bit brute for our chunk to land on the file structure and for us to get the leaks.
+In the description of the challenge the author mentioned that the ASLR brute was not above `8 bits` to which initially my idea was to overwrite the lowest byte of a `tcache` chunk to get an 8 bit brute on an overlap which I could maybe use as a spray of size to reduce it to a 4 bit brute. But it seemed way too unreliable as for fsop also in the method that I knew of we needed another 4 bit brute for our chunk to land on the file structure and for us to get the leaks.
 
 `Honestly i just wanted to improve my odds because my internet is terrible`
 
@@ -95,6 +95,15 @@ This is the piece of code that corresponds to the following action :
 
 ##### GAINING OVERLAPPING CHUNKS
 Here the only check that happens is that of the fd thus we can use this to fake a largebin chunk by setting pointers and crafting a fake chunk. We do obviously have to make a chunk that passes the unlink_chunk function within the src but this just provides us a way to get overlaps.
+
+> Things that are required to be setup are these 
+- size field
+- prev_size field
+- next_size with prev_inuse unset
+- next next's prev_inuse as it checks to coalesce
+- current's prev_inuse as it checks to coalesce 
+
+You can of course just refer the source and its written there plain and straight.
 If we dont use the largebin of this size afterwards we wont also run into much issues regarding the corruption of this linked list. Thus a cool way to get overlapping chunks when you can edit the fd by one byte.
 
 ##### HOW DO YOU SET THE POINTERS ?
@@ -108,7 +117,8 @@ The current setup resulted in me getting an overlapped largebin chunk. :D
 
 I was looking at the options on what all could be used as to reduce the brute and remembered the trick from the previous writeup i put out. Since we now have overlapping chunks, we can just directly attack the tcache perthread struct but doing the following.
 
-I call this a smallbin stash diversion ive not seen an attack like this in how2heap or in the internet so :D new technique? idk
+I call this a smallbin stash diversion I've not seen an attack like this in how2heap or in the internet so :D new technique? idk
+
 Though one technique that uses this concept of stashing is the smallbin stashing unlink attack which works in the latest glibc versions but it uses calloc for getting an unlink to bypass the tcache layer in libc. while this is a primitive that works for when you just malloc this is kind of inspired from that.
 
 ```
@@ -166,7 +176,7 @@ This is thanks to this piece of code -
 So the following code doesn't check the links of the linked list thus what we can do is 
 Setup the bk pointers to go through whatever region we want to allocate on. 
 As long as it forms a closed loop back to the smallbin of the same size we can get an allocation anywhere we want.
-Depending on the setup we can pull this off completely leakless also if we rely on placing pointers and partially overwriting it.
+Depending on the setup we can pull this off completely leakless also if we rely on placing pointers and partially overwriting it. But of course we are restricted with what size we can do this to.
 
 Eg:
 
@@ -224,7 +234,7 @@ WE GET ALLOCATION HERE  ────────┘
 
 ```
 
-###### ___Where is this useful ?___
+###### ___When is this useful ?___
 > __if__
 - You have a heap pointer at a known address 
 - The address in which the pointer lies has the last nibble be 0x8 because we are using it as the bk
@@ -257,23 +267,24 @@ We need this because editing more than 1 byte would lead to having to deal with 
 
 ##### DO WE GET A LEAK, ANYTIME SOON ?
 
-You can use fsop to leak the libc addresses within the file structure itself by editing the flags and setting a few pointers to null it has been beautifuly explained by sherl0ck [here](https://vigneshsrao.github.io/posts/babytcache/), Thus I wont be going much into it. This is the part where it required a 4 bit brute as the aslr address had the 4th nibble be random due to page alignment being 0x1000 bytes.
+You can use fsop to leak the libc addresses within the file structure itself by editing the flags and setting a few pointers to null it has been beautifuly explained by sherl0ck [here](https://vigneshsrao.github.io/posts/babytcache/), Thus I wont be going much into it. This is the part where it required a `4 bit brute` as the aslr address had the 4th nibble from the end be random due to page alignment being 0x1000 bytes.
 
 ##### CODE EXECUTION ? 
 
-In glibc 2.39 many code execution paths have been patched so we can mostly only rely on fsop, which is exactly what was done, I used _IO_wdoallocbuf+43 code path for code execution. It is mentioned here in niftic's [blog](https://niftic.ca/posts/fsop/) and referred [blog](https://faraz.faith/2020-10-13-FSOP-lazynote/) for the structure.
+In glibc 2.39 many code execution paths have been patched so we can mostly only rely on fsop, which is exactly what was done, I used _IO_wdoallocbuf+43 code path for code execution. It is mentioned here in niftic's [blog](https://niftic.ca/posts/fsop/) and referred this [blog](https://faraz.faith/2020-10-13-FSOP-lazynote/) for the structure.
 
 >[!danger] PART 3 COMPLETE : CODE EXECUTION
 
 Thats it for `a silence of 3 parts`
 
-I dont know if this warrants to being a house but if it was I would call it House of pain :) enough with the unfunny jokes then :D.
-I wanted to blood the challenge but couldn't due to how complicated this exploit got but the challenge was worth solving, felt like I re-explored malloc though, I reccomend this as a challenge I've had fun with despite the painfulness of some of the parts of this exploit. I would not have solved this challenge the intended way even If i could have gotten the script done cause of my connection speed which is as slow as a sloth, well at least got a third blood (\`o\`)/.
+I dont know if this warrants to being a house but if it was I would call it House of pain :) enough with the unfunny jokes then :D
 
-If you have any queries regarding this or if I missed something or If you just want to talk about pwning I'm  [\_r0r1\_](discordapp.com/users/_r0r1_) in discord
+I wanted to blood the challenge but couldn't due to how complicated this exploit got but the challenge was worth solving, felt like I re-explored malloc. I reccomend this, as this is a challenge I've had fun with despite the painfulness of some of the parts of this exploit. I would not have solved this challenge the intended way even If i could have gotten the script done cause of my connection speed which is as slow as a sloth, well at least got a third blood (\`o\`)/.
 
+If you have any queries regarding this or if I missed something or If you just want to talk about pwning I'm  [\_r0r1\_](discordapp.com/users/_r0r1_) in discord. Hopefuly It was worth your time and I at least understood the solve for this challenge. 
+
+___
 And that's about it Here is my exploit for the same > 
-
 #### EXPLOIT 
 
 ```py
@@ -635,5 +646,4 @@ p.interactive()
 
 
 > [!quote]-
-> New phrack zine dropped go read it byee : D
-
+> Anyways New phrack zine dropped go read it byee : D
