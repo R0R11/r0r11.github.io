@@ -38,6 +38,9 @@ ___
 
 You can check the challenge authors blog for that :D. I probably wouldnt have been able to come up with such an idea as explained here, when it'll be up over here -> [unvariant](https://unvariant.pages.dev/writeups/). Thus I had to come up with something unusual. I think you should go read the actual solution first before the current cause I feel one should always appreciate what the challenge was supposed to be before what it became.
 
+[+] I am hoping you read that if it is out - 
+Something that I forgot about in my solve was this exact thing on how I could corrupt arena->top by partially overwriting libc address without a brute so that I can get a write over file structure. Which if done properly could have yielded an exploit that works 100% of the time without any brutes. Could have been cool but nevertheless some exploit is better than none.
+
 ___
 #### UNINTENDED / MY APPROACH -
 
