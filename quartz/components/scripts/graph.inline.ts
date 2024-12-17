@@ -207,7 +207,7 @@ async function renderGraph(container: string, fullSlug: FullSlug) {
 
   // draw individual nodes
   const node = graphNode
-    .append("square")
+    .append("circle")
     .attr("class", "node")
     .attr("id", (d) => d.id)
     .attr("r", nodeRadius)
